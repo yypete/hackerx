@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["@vue/runtime-dom","node"],
+    "types": ["@vue/runtime-dom","node","vue-router"],
     "target": "ES2020",
     "useDefineForClassFields": true,
     "module": "ESNext",

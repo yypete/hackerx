@@ -7,7 +7,7 @@
       v-show="!item.hidden"
     >
       <div class="title">
-        <div class="index">{{ visibleIndex + 1 }}.</div>
+        <div class="index">{{ visibleIndex + 1 + start }}.</div>
         <div class="title-content">
           <i class="fi fi-sr-caret-up translate-y-0.5 arrow"></i>
           <span class="item-title">
@@ -33,15 +33,26 @@
         <span v-if="!(type === 'job')" class="separator">|</span>
         <a v-if="!(type === 'job')" @click="hideItem(visibleIndex)">hide</a>
         <span v-if="!(type === 'job')" class="separator">|</span>
-        <span
+        <router-link
+          :to="{ name: 'NewsComments', params: { itemId: item.id } }"
           class="comments cursor-pointer hover:underline"
-          v-if="!(type === 'job')"
-          >{{ item.descendants }} comments</span
         >
+          <span
+            class="comments cursor-pointer hover:underline"
+            v-if="!(type === 'job')"
+            v-show="!(item.descendants === 0)"
+            >{{ item.descendants }} comments</span
+          >
+          <span
+            class="comments cursor-pointer hover:underline"
+            v-show="item.descendants === 0"
+            >discuss</span
+          >
+        </router-link>
       </div>
     </div>
     <div class="pt-2 text-gray-500">
-      <span class="pl-7">More</span>
+      <span class="pl-7 cursor-pointer" @click="loadMore">More</span>
     </div>
   </div>
 </template>
@@ -65,26 +76,45 @@ export default defineComponent({
   setup(props) {
     const items = ref<ExtendedItem[]>([]);
     const type = ref<string>(props.fetchType);
-
+    const page = ref<number>(0); // 使用 page 作为页数，从0开始
     const loadItems = async () => {
       try {
-        const fetchedItems: Item[] = await fetchListData(props.fetchType);
+        const fetchedItems: Item[] = await fetchListData(
+          props.fetchType,
+          0,
+          30
+        );
         items.value = fetchedItems.map((item) => ({ ...item, hidden: false }));
+        page.value = 1; // 初始化页数为1
       } catch (error) {
         console.error("Error fetching stories:", error);
       }
     };
-
+    const start = computed(() => (page.value - 1) * 30);
+    const loadMore = async () => {
+      try {
+        const start = page.value * 30;
+        const fetchedItems: Item[] = await fetchListData(
+          props.fetchType,
+          start,
+          start + 30
+        );
+        items.value = fetchedItems.map((item) => ({ ...item, hidden: false })); // 覆盖现有数据
+        page.value++; // 更新页数
+      } catch (error) {
+        console.error("Error fetching more stories:", error);
+      }
+    };
+    // 监听 fetchType 变化，重新加载数据
     watch(
       () => props.fetchType,
       (newVal, oldVal) => {
         if (newVal !== oldVal) {
-          type.value = newVal; // Update the type value
-          loadItems(); // Re-load data when fetchType changes
+          type.value = newVal;
+          loadItems();
         }
       }
     );
-
     const formatTimeAgo = (timestamp: number): string => {
       const now = Math.floor(Date.now() / 1000);
       const diff = now - timestamp;
@@ -101,11 +131,9 @@ export default defineComponent({
         return `${days} days ago`;
       }
     };
-
     const hideItem = (index: number): void => {
       items.value[index].hidden = true;
     };
-
     const extractDomain = (url: string | undefined | null): string => {
       const match = url && url.match(/:\/\/(www\.)?([^/]+)/);
       if (match) {
@@ -116,15 +144,12 @@ export default defineComponent({
         return "";
       }
     };
-
     const visibleItems = computed(() =>
       items.value.filter((item) => !item.hidden)
     );
-
     onMounted(() => {
       loadItems();
     });
-
     return {
       items,
       formatTimeAgo,
@@ -132,6 +157,8 @@ export default defineComponent({
       visibleItems,
       extractDomain,
       type,
+      loadMore,
+      start,
     };
   },
 });

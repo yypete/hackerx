@@ -12,9 +12,13 @@ export interface Item {
   url: string;
   descendants?: number;
   time?: number;
+  parent?: number;
   text?: string;
   type?: string;
   kids?: number[];
+  visibleIndex?: number; 
+  hidden?: boolean;
+
 }
 
 // User 接口定义，根据实际数据结构调整
@@ -69,12 +73,21 @@ export function fetchUser(id: string, cache?: Cache<User>): Promise<User> {
 // 根据类型获取列表数据（首先获取 ID 数组，然后获取多个 Item）
 export async function fetchListData(
   type: string,
+  start: number,
+  end: number,
   cache?: Cache<number[]> & Cache<Item>
 ): Promise<Item[]> {
   try {
     const ids = await fetchIdsByType(type, cache);
-    const top30Ids = ids.slice(0, 30); // 只获取前 30 个 ID
-    return fetchItems(top30Ids, cache);
+    const slicedIds = ids.slice(start, end);
+    const fetchedItems = await fetchItems(slicedIds, cache);
+    
+    // 对获取到的数据进行排序，保持原有顺序
+    const sortedItems = fetchedItems.sort((a, b) => {
+      return slicedIds.indexOf(a.id) - slicedIds.indexOf(b.id);
+    });
+
+    return sortedItems;
   } catch (error) {
     console.error("Failed to fetch list data:", error);
     throw error;

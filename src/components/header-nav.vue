@@ -4,7 +4,7 @@
       <tr>
         <!-- logo:Y -->
         <td class="pl-1">
-          <router-link to="">
+          <router-link :to="{ name: 'NewsRender', params: { fetchType: 'top' } }">
             <img
               src="https://news.ycombinator.com/y18.svg"
               width="20px"
@@ -16,27 +16,32 @@
         <!-- left-nav -->
         <td class="headline">
           <router-link
-            to="/news"
+            :to="{ name: 'NewsRender', params: { fetchType: 'top' } }"
             id="title"
-            @click.prevent="selected('Hackers News', 'top')"
+            @click="selected('Hackers News', 'top')"
+            class="cursor-pointer"
           >
             Hackers News
           </router-link>
           <span v-for="(item, index) in navData" :key="index">
             <router-link
-              :to="item.path"
+              :to="{
+                name: 'NewsRender',
+                params: { fetchType: fetchTypes[item.name] },
+              }"
               class="nav"
-              @click.prevent="selected(item.name, fetchTypes[item.name])"
+              @click="selected(item.name, fetchTypes[item.name])"
               :class="{ 'text-white': selectedName === item.name }"
             >
               {{ item.name }}
             </router-link>
             <span class="separator" v-if="index < navData.length - 1"> | </span>
           </span>
+          <span class="separator"> | </span>
           <router-link
-            to="/submit"
+            :to="{ name: 'NewsRender', params: { fetchType: 'submit' } }"
             class="nav"
-            @click.prevent="selected('submit', 'submit')"
+            @click="selected('submit', 'submit')"
             :class="{ 'text-white': selectedName === 'submit' }"
           >
             submit
@@ -47,13 +52,12 @@
     <!-- right-nav -->
     <router-link to="/login" class="nav pr-2">login</router-link>
   </div>
-  <NewsRender :fetchType="currentFetchType" />
+  <router-view></router-view>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import { headerNavData } from "../dataConfig";
-import NewsRender from "./news-render.vue";
 
 interface TableData {
   name: string;
@@ -62,13 +66,10 @@ interface TableData {
 
 export default defineComponent({
   name: "HeaderNav",
-  components: {
-    NewsRender,
-  },
   setup() {
     const navData = ref<TableData[]>(headerNavData);
     const selectedName = ref<string | null>(null);
-    const currentFetchType = ref<string>("job");
+    const currentFetchType = ref<string>("top");
 
     const fetchTypes: Record<string, string> = {
       "Hackers News": "top",
@@ -80,7 +81,6 @@ export default defineComponent({
       jobs: "job",
       submit: "submit",
     };
-
     const selected = (name: string, fetchType: string) => {
       selectedName.value = name;
       currentFetchType.value = fetchType;
