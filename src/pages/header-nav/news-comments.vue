@@ -57,8 +57,12 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { fetchItem, Item, fetchItems } from "../api/fetch";
-import CommentItem from "./comment-item.vue";
+import { fetchItem, Item, fetchItems } from "../../api/fetch-item";
+import CommentItem from "../../components/item-comment.vue";
+import { extractDomain } from "../../utils/extract-url";
+import { decodeHtmlEntity } from "../../utils/decode-html-entity";
+import { formatTimeAgo } from "../../utils/format-time";
+import { formatParagraphs } from "../../utils/format-paragraphs";
 
 export default defineComponent({
   name: "NewsComments",
@@ -89,7 +93,12 @@ export default defineComponent({
         if (item.value && item.value.kids) {
           console.log("Fetching kids items for item:", item.value);
           const kidIds = item.value.kids;
-          const fetchedItems = await fetchItems(kidIds);
+          // 设置开始和结束索引
+          const start = 0;
+          const end = kidIds.length;
+          // 获取子项的数据
+          const fetchedItems = await fetchItems(kidIds, start, end);
+
           kidItems.value = fetchedItems;
           console.log("Fetched kid items:", kidItems.value);
         }
@@ -98,52 +107,10 @@ export default defineComponent({
       }
     };
 
-    const decodeHtmlEntity = (input: string | undefined | null): string => {
-      if (!input) return "";
-      const doc = new DOMParser().parseFromString(input, "text/html");
-      return doc.documentElement.textContent ?? "";
-    };
-
-    const formatTimeAgo = (timestamp: number): string => {
-      const now = Math.floor(Date.now() / 1000);
-      const diff = now - timestamp;
-      if (diff < 60) {
-        return `${diff} seconds ago`;
-      } else if (diff < 3600) {
-        const minutes = Math.floor(diff / 60);
-        return `${minutes} minutes ago`;
-      } else if (diff < 86400) {
-        const hours = Math.floor(diff / 3600);
-        return `${hours} hours ago`;
-      } else {
-        const days = Math.floor(diff / 86400);
-        return `${days} days ago`;
-      }
-    };
-
-    const extractDomain = (url: string | undefined | null): string => {
-      const match = url && url.match(/:\/\/(www\.)?([^/]+)/);
-      if (match) {
-        return match[2];
-      } else if (url) {
-        return url;
-      } else {
-        return "";
-      }
-    };
-
     const hideItem = () => {
       if (item.value) {
         item.value.hidden = true;
       }
-    };
-
-    const formatParagraphs = (text: string | undefined | null): string[] => {
-      if (!text) return [];
-      return text
-        .split(/<\/?p>/)
-        .filter((paragraph) => paragraph.trim() !== "")
-        .map((paragraph) => paragraph.trim());
     };
 
     onMounted(() => {
@@ -175,7 +142,6 @@ export default defineComponent({
   font-size: 13.4px;
   display: flex;
   flex-direction: column;
-
   .item {
     margin-bottom: 2px;
 

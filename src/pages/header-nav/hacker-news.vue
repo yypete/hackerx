@@ -13,23 +13,30 @@
           <span class="item-title">
             <a :href="item.url">{{ item.title }}</a>
           </span>
-          <span class="item-url" v-if="item.url"
-            >({{ extractDomain(item.url) }})</span
-          >
+          <span class="item-url" v-if="item.url">
+            ({{ extractDomain(item.url) }})
+          </span>
         </div>
       </div>
-      <div class="details pl-1">
-        <span class="score" v-if="!(type === 'job')"
-          >{{ item.score }} points by</span
+      <div class="details pl-3">
+        <span class="score" v-if="!(type === 'job')">
+          {{ item.score }} points by
+        </span>
+        <router-link :to="{ name: 'HackerUser', params: { userId: item.by } }">
+          <span
+            class="by px-1 cursor-pointer hover:underline"
+            v-if="!(type === 'job')"
+          >
+            {{ item.by }}
+          </span>
+        </router-link>
+        <router-link
+          :to="{ name: 'NewsComments', params: { itemId: item.id } }"
         >
-        <span
-          class="by px-1 cursor-pointer hover:underline"
-          v-if="!(type === 'job')"
-          >{{ item.by }}</span
-        >
-        <span class="time cursor-pointer hover:underline">{{
-          formatTimeAgo(item.time ?? 0)
-        }}</span>
+          <span class="time cursor-pointer hover:underline">
+            {{ formatTimeAgo(item.time ?? 0) }}
+          </span>
+        </router-link>
         <span v-if="!(type === 'job')" class="separator">|</span>
         <a v-if="!(type === 'job')" @click="hideItem(visibleIndex)">hide</a>
         <span v-if="!(type === 'job')" class="separator">|</span>
@@ -39,28 +46,25 @@
         >
           <span
             class="comments cursor-pointer hover:underline"
-            v-if="!(type === 'job')"
-            v-show="!(item.descendants === 0)"
-            >{{ item.descendants }} comments</span
+            v-if="!(item.descendants === 0)"
           >
-          <span
-            class="comments cursor-pointer hover:underline"
-            v-show="item.descendants === 0"
-            >discuss</span
-          >
+            {{ item.descendants }} comments
+          </span>
+          <span v-show="item.descendants === 0">discuss</span>
         </router-link>
       </div>
     </div>
     <div class="pt-2 text-gray-500">
-      <span class="pl-7 cursor-pointer" @click="loadMore">More</span>
+      <span class="pl-11 cursor-pointer" @click="loadMore">More</span>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, computed } from "vue";
-import { fetchListData, Item } from "../api/fetch";
-
+import { fetchListData, Item } from "../../api/fetch-item";
+import { formatTimeAgo } from "../../utils/format-time";
+import { extractDomain } from "../../utils/extract-url";
 interface ExtendedItem extends Item {
   hidden: boolean;
 }
@@ -115,35 +119,11 @@ export default defineComponent({
         }
       }
     );
-    const formatTimeAgo = (timestamp: number): string => {
-      const now = Math.floor(Date.now() / 1000);
-      const diff = now - timestamp;
-      if (diff < 60) {
-        return `${diff} seconds ago`;
-      } else if (diff < 3600) {
-        const minutes = Math.floor(diff / 60);
-        return `${minutes} minutes ago`;
-      } else if (diff < 86400) {
-        const hours = Math.floor(diff / 3600);
-        return `${hours} hours ago`;
-      } else {
-        const days = Math.floor(diff / 86400);
-        return `${days} days ago`;
-      }
-    };
+
     const hideItem = (index: number): void => {
       items.value[index].hidden = true;
     };
-    const extractDomain = (url: string | undefined | null): string => {
-      const match = url && url.match(/:\/\/(www\.)?([^/]+)/);
-      if (match) {
-        return match[2];
-      } else if (url) {
-        return url;
-      } else {
-        return "";
-      }
-    };
+
     const visibleItems = computed(() =>
       items.value.filter((item) => !item.hidden)
     );
@@ -186,10 +166,11 @@ export default defineComponent({
     }
 
     .index {
-      width: 15px;
+      width: 22px;
       color: #828282;
       text-align: right;
     }
+
     .title-content {
       display: flex;
       align-items: center;

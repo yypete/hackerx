@@ -17,5 +17,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* 这里可以添加组件的局部样式 */
+
 </style>

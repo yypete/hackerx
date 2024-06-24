@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
-import NewsComments from "../components/news-comments.vue";
-import NewsRender from "../components/news-render.vue";
+import NewsComments from "../pages/header-nav/news-comments.vue";
+import NewsRender from "../pages/header-nav/hacker-news.vue";
+import HackerUser from "../pages/header-nav/hacker-user.vue";
+import NewsUser from "../pages/header-nav/user-news.vue";
 const routes: RouteRecordRaw[] = [];
 routes.push(
   {
@@ -10,9 +12,21 @@ routes.push(
     props: true,
   },
   {
+    path: "/user?id=:userId",
+    name: "HackerUser",
+    component: HackerUser,
+    props: true,
+  },
+  {
     path: "/:fetchType",
     name: "NewsRender",
     component: NewsRender,
+    props: true,
+  },
+  {
+    path: "/:ids+",
+    name: "NewsUser",
+    component: NewsUser,
     props: true,
   }
 );

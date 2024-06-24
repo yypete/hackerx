@@ -4,7 +4,9 @@
       <tr>
         <!-- logo:Y -->
         <td class="pl-1">
-          <router-link :to="{ name: 'NewsRender', params: { fetchType: 'top' } }">
+          <router-link
+            :to="{ name: 'NewsRender', params: { fetchType: 'top' } }"
+          >
             <img
               src="https://news.ycombinator.com/y18.svg"
               width="20px"
@@ -52,7 +54,7 @@
     <!-- right-nav -->
     <router-link to="/login" class="nav pr-2">login</router-link>
   </div>
-  <router-view></router-view>
+
 </template>
 
 <script lang="ts">

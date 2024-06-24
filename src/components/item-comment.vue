@@ -2,7 +2,7 @@
   <div class="comment" :id="'comment-' + comment.id">
     <div class="title">
       <span><i class="fi fi-sr-caret-up translate-y-0.5 arrow"></i></span>
-      <span>{{ comment.by }}</span>
+      <span class="p-1">{{ comment.by }} </span>
       <span>{{ formatTimeAgo(comment.time ?? 0) }} |</span>
       <span
         v-show="rootComment"
@@ -23,9 +23,11 @@
         <template v-if="isVisible"> [-] </template>
         <template v-else-if="kidComments.length > 0">
           [{{ kidComments.length }}
-          {{ kidComments.length !== 1 ? "more" : "" }}]
+          {{
+            kidComments.length === 0 || kidComments.length === 1 ? "" : "more"
+          }}]
         </template>
-        <template v-else> [0 more] </template>
+        <template v-else> [+] </template>
       </span>
     </div>
     <div class="content" v-show="isVisible">
@@ -46,14 +48,16 @@
         :key="index"
         :comment="kid"
       />
-      <div v-if="!hasLoadedKids && kidComments.length === 0">Loading...</div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, PropType, watchEffect } from "vue";
-import { fetchItems, Item } from "../api/fetch";
+import { fetchItems, Item } from "../api/fetch-item";
+import { decodeHtmlEntity } from "../utils/decode-html-entity";
+import { formatTimeAgo } from "../utils/format-time";
+import { formatParagraphs } from "../utils/format-paragraphs";
 
 export default defineComponent({
   name: "CommentItem",
@@ -70,11 +74,12 @@ export default defineComponent({
     const rootComment = ref<HTMLElement | null>(null);
     const parentComment = ref<HTMLElement | null>(null);
     const nextSiblingComment = ref<HTMLElement | null>(null);
-
     const loadKidsComments = async () => {
       if (props.comment.kids && props.comment.kids.length > 0) {
         try {
-          const fetchedItems = await fetchItems(props.comment.kids);
+          const start = 0;
+          const end = props.comment.kids.length;
+          const fetchedItems = await fetchItems(props.comment.kids, start, end);
           kidComments.value = fetchedItems;
           hasLoadedKids.value = true;
         } catch (error) {
@@ -82,38 +87,6 @@ export default defineComponent({
         }
       }
     };
-
-    const decodeHtmlEntity = (input: string | undefined | null): string => {
-      if (!input) return "";
-      const doc = new DOMParser().parseFromString(input, "text/html");
-      return doc.documentElement.textContent ?? "";
-    };
-
-    const formatTimeAgo = (timestamp: number): string => {
-      const now = Math.floor(Date.now() / 1000);
-      const diff = now - timestamp;
-      if (diff < 60) {
-        return `${diff} seconds ago`;
-      } else if (diff < 3600) {
-        const minutes = Math.floor(diff / 60);
-        return `${minutes} minutes ago`;
-      } else if (diff < 86400) {
-        const hours = Math.floor(diff / 3600);
-        return `${hours} hours ago`;
-      } else {
-        const days = Math.floor(diff / 86400);
-        return `${days} days ago`;
-      }
-    };
-
-    const formatParagraphs = (text: string | undefined | null): string[] => {
-      if (!text) return [];
-      return text
-        .split(/<\/?p>/)
-        .filter((paragraph) => paragraph.trim() !== "")
-        .map((paragraph) => paragraph.trim());
-    };
-
     const toggleVisibility = () => {
       if (!isVisible.value && !hasLoadedKids.value) {
         loadKidsComments();
@@ -174,16 +147,15 @@ export default defineComponent({
       }
     };
 
-    onMounted(() => {
-      loadKidsComments();
-    });
-
     watchEffect(() => {
       rootComment.value = findRootComment(props.comment);
       parentComment.value = findParentComment(props.comment);
       nextSiblingComment.value = findNextSiblingComment(props.comment);
     });
 
+    onMounted(() => {
+      loadKidsComments();
+    });
     return {
       kidComments,
       isVisible,
