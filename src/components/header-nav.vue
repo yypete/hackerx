@@ -59,7 +59,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import { headerNavData } from "../dataConfig";
+import { headerNavData } from "@/dataConfig";
 
 interface TableData {
   name: string;

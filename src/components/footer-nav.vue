@@ -33,7 +33,7 @@
 </template>
 
 <script lang="ts">
-import { footerNavData } from "../dataConfig";
+import { footerNavData } from "@/dataConfig";
 import { ref, onMounted } from "vue";
 
 interface TableData {

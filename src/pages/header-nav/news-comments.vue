@@ -57,12 +57,12 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { fetchItem, Item, fetchItems } from "../../api/fetch-item";
-import CommentItem from "../../components/item-comment.vue";
-import { extractDomain } from "../../utils/extract-url";
-import { decodeHtmlEntity } from "../../utils/decode-html-entity";
-import { formatTimeAgo } from "../../utils/format-time";
-import { formatParagraphs } from "../../utils/format-paragraphs";
+import { fetchItem, Item, fetchItems } from "@/api/fetch-item";
+import CommentItem from "@/components/item-comment.vue";
+import { extractDomain } from "@/utils/extract-url";
+import { decodeHtmlEntity } from "@/utils/decode-html-entity";
+import { formatTimeAgo } from "@/utils/format-time";
+import { formatParagraphs } from "@/utils/format-paragraphs";
 
 export default defineComponent({
   name: "NewsComments",

@@ -54,10 +54,10 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, PropType, watchEffect } from "vue";
-import { fetchItems, Item } from "../api/fetch-item";
-import { decodeHtmlEntity } from "../utils/decode-html-entity";
-import { formatTimeAgo } from "../utils/format-time";
-import { formatParagraphs } from "../utils/format-paragraphs";
+import { fetchItems, Item } from "@/api/fetch-item";
+import { decodeHtmlEntity } from "@/utils/decode-html-entity";
+import { formatTimeAgo } from "@/utils/format-time";
+import { formatParagraphs } from "@/utils/format-paragraphs";
 
 export default defineComponent({
   name: "CommentItem",

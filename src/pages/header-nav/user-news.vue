@@ -70,9 +70,9 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, watch, computed } from "vue";
-import { fetchItems, Item } from "../../api/fetch-item";
-import { formatTimeAgo } from "../../utils/format-time";
-import { extractDomain } from "../../utils/extract-url";
+import { fetchItems, Item } from "@/api/fetch-item";
+import { formatTimeAgo } from "@/utils/format-time";
+import { extractDomain } from "@/utils/extract-url";
 
 interface ExtendedItem extends Item {
   hidden: boolean;

@@ -36,7 +36,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
-import { userFetch } from "../../api/fetch-item";
+import { userFetch } from "@/api/fetch-item";
 import { useRoute } from "vue-router";
 
 interface User {
